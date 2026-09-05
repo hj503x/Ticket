@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TICKET — Pre-Trade Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10141a;
+    --panel:#161b23;
+    --panel-2:#1c222c;
+    --line:#2a323f;
+    --text:#e7e6df;
+    --dim:#8b93a3;
+    --amber:#e8a33d;
+    --teal:#4fb8a8;
+    --red:#d9695f;
+    --radius:3px;
+    --header-h:auto;
+  }
+  html[data-theme="light"]{
+    --ink:#f4f1e8;
+    --panel:#ffffff;
+    --panel-2:#faf7ef;
+    --line:#ddd6c4;
+    --text:#20242c;
+    --dim:#6d7280;
+    --amber:#b56e15;
+    --teal:#1a8574;
+    --red:#b8382b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:'IBM Plex Mono',monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+  }
+  button, select, input{
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    background:var(--ink);
+    z-index:20;
+  }
+  .header-inner{
+    padding:16px 20px 12px;
+    max-width:920px;
+    margin:0 auto;
+  }
+  .header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    color:var(--text);
+  }
+  .brand span{color:var(--amber);}
+  .subhead{
+    font-size:11px;
+    color:var(--dim);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+  .header-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .status-ticket{
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--dim);
+    text-align:right;
+    line-height:1.6;
+  }
+  .status-ticket b{
+    color:var(--teal);
+    font-size:14px;
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .status-ticket b.warn{color:var(--amber);}
+
+  .theme-toggle{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--text);
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:8px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    min-height:36px;
+  }
+  .theme-toggle:hover{border-color:var(--dim);}
+  .theme-toggle:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+  /* ---------- Section nav ---------- */
+  .section-nav{
+    display:flex;
+    gap:4px;
+    max-width:920px;
+    margin:10px auto 0;
+    padding:0 20px 12px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .section-nav::-webkit-scrollbar{display:none;}
+  .nav-tab{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--dim);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-height:36px;
+  }
+  .nav-tab.active{
+    border-color:var(--teal);
+    color:var(--teal);
+    background:rgba(79,184,168,0.08);
+  }
+  .nav-tab:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+  /* ---------- Layout ---------- */
+  main{
+    max-width:920px;
+    margin:0 auto;
+    padding:24px 20px 90px;
+  }
+  .toprow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .action-btns{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .new-session-btn, .util-btn{
+    background:none;
+    border:1px solid var(--amber);
+    color:var(--amber);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:9px 14px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    transition:background .15s, color .15s;
+    min-height:38px;
+  }
+  .new-session-btn:hover{background:var(--amber);color:var(--ink);}
+  .util-btn{border-color:var(--line);color:var(--dim);}
+  .util-btn:hover{color:var(--text);border-color:var(--dim);}
+  .new-session-btn:focus-visible, .util-btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+
+  .filters{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .filter-chip{
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--dim);
+    font-size:11px;
+    letter-spacing:0.04em;
+    padding:7px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    min-height:34px;
+  }
+  .filter-chip.active{
+    border-color:var(--teal);
+    color:var(--teal);
+  }
+  .filter-chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+  section.block{margin-bottom:34px;scroll-margin-top:130px;}
+  .block-head{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:12px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:8px;
+  }
+  .block-head h2{
+    font-size:15px;
+    margin:0;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+  }
+  .block-head .count{
+    font-size:11px;
+    color:var(--dim);
+  }
+  .group-label{
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin:16px 0 8px;
+  }
+  .group-label:first-child{margin-top:0;}
+
+  /* ---------- Checklist ---------- */
+  .checklist-item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:13px 14px;
+    margin-bottom:8px;
+  }
+  .checklist-item.checked{
+    border-color:var(--teal);
+    background:linear-gradient(90deg, rgba(79,184,168,0.08), var(--panel) 20%);
+  }
+  .checklist-item input[type=checkbox]{
+    appearance:none;
+    width:20px;height:20px;
+    min-width:20px;
+    border:1.5px solid var(--dim);
+    border-radius:4px;
+    margin-top:1px;
+    cursor:pointer;
+    position:relative;
+  }
+  .checklist-item input[type=checkbox]:checked{
+    background:var(--teal);
+    border-color:var(--teal);
+  }
+  .checklist-item input[type=checkbox]:checked::after{
+    content:"✓";
+    position:absolute;
+    left:3px;top:-3px;
+    color:#ffffff;
+    font-size:14px;
+    font-weight:700;
+  }
+  .checklist-item input:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .item-text{flex:1;font-size:13.5px;line-height:1.5;}
+  .item-text.done{color:var(--dim);text-decoration:line-through;}
+  .tag{
+    font-size:10px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--dim);
+    border:1px solid var(--line);
+    padding:2px 7px;
+    border-radius:10px;
+    white-space:nowrap;
+  }
+  .del-btn{
+    background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;
+    padding:6px 8px;min-width:34px;min-height:34px;border-radius:4px;
+  }
+  .del-btn:hover{color:var(--red);}
+  .del-btn.confirming{
+    color:var(--red);
+    border:1px solid var(--red);
+    font-size:10px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:6px 10px;
+  }
+  .ts{font-size:10px;color:var(--dim);white-space:nowrap;}
+
+  /* ---------- Triggers ---------- */
+  .trigger-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:10px;
+    position:relative;
+  }
+  .trigger-row{
+    display:grid;
+    grid-template-columns:52px 1fr;
+    gap:4px 12px;
+    font-size:13px;
+    line-height:1.5;
+  }
+  .trigger-label{
+    color:var(--amber);
+    font-size:10px;
+    letter-spacing:0.08em;
+    padding-top:2px;
+  }
+  .trigger-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .trigger-meta-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  /* ---------- Watchlist ---------- */
+  .watch-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .watch-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .watch-asset{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.02em;
+  }
+  .watch-level-wrap{text-align:right;}
+  .watch-level{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:20px;
+    color:var(--amber);
+  }
+  .watch-level small{
+    font-size:10.5px;
+    color:var(--dim);
+    font-weight:500;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    display:block;
+    margin-top:2px;
+  }
+  .watch-condition{
+    font-size:13px;
+    margin-top:10px;
+    line-height:1.5;
+  }
+  .watch-note{
+    font-size:12px;
+    color:var(--dim);
+    margin-top:5px;
+    font-style:italic;
+  }
+  .watch-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:12px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .watch-meta-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .status-btn{
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:6px 12px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    cursor:pointer;
+    background:none;
+    min-height:32px;
+  }
+  .status-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .status-btn.watching{color:var(--amber);border-color:var(--amber);}
+  .status-btn.triggered{color:var(--teal);border-color:var(--teal);}
+  .status-btn.invalidated{color:var(--dim);border-color:var(--line);}
+  .watch-tf{
+    font-size:10px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--dim);
+  }
+
+  /* ---------- Add form ---------- */
+  .add-form{
+    background:var(--panel-2);
+    border:1px dashed var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+  }
+  .add-form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .add-form input[type=text], .add-form select{
+    background:var(--ink);
+    border:1px solid var(--line);
+    color:var(--text);
+    font-size:13px;
+    padding:10px 10px;
+    border-radius:var(--radius);
+    min-height:40px;
+  }
+  .add-form input[type=text]:focus-visible, .add-form select:focus-visible{
+    outline:2px solid var(--teal);outline-offset:1px;
+  }
+  .add-form input[type=text]{flex:1;min-width:180px;}
+  .add-btn{
+    background:var(--teal);
+    border:none;
+    color:#06110f;
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:10px 16px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    min-height:40px;
+  }
+  .add-btn:hover{opacity:0.88;}
+  .add-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .toggle-add{
+    background:none;border:1px solid var(--line);color:var(--dim);
+    font-size:11px;letter-spacing:0.05em;text-transform:uppercase;
+    padding:9px 12px;border-radius:var(--radius);cursor:pointer;margin-bottom:10px;
+    min-height:38px;
+  }
+  .toggle-add:hover{color:var(--text);border-color:var(--dim);}
+
+  .empty{
+    color:var(--dim);
+    font-size:12.5px;
+    padding:16px;
+    text-align:center;
+    border:1px dashed var(--line);
+    border-radius:var(--radius);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+
+  @media (max-width:600px){
+    .status-ticket{text-align:left;}
+    .header-row{flex-direction:column;align-items:flex-start;}
+    .header-right{width:100%;justify-content:space-between;}
+    .trigger-row{grid-template-columns:44px 1fr;font-size:12.5px;}
+    section.block{scroll-margin-top:150px;}
+  }
+
+  @media (min-width:601px){
+    main{padding-top:28px;}
+    .checklist-item, .watch-card, .trigger-card{padding:16px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-row">
+      <div>
+        <div class="brand">TICKET<span>_</span></div>
+        <div class="subhead">pre-trade checklist &amp; conditional triggers</div>
+      </div>
+      <div class="header-right">
+        <div class="status-ticket">
+          SESSION PROGRESS<br>
+          <b id="progressText">0 / 0</b>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span><span id="themeLabel">Dark</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <nav class="section-nav" id="sectionNav">
+    <button class="nav-tab" data-jump="checklistSection">Checklist</button>
+    <button class="nav-tab" data-jump="watchlistSection">Watchlist</button>
+    <button class="nav-tab" data-jump="triggersSection">Triggers</button>
+  </nav>
+</header>
+
+<main>
+
+  <div class="toprow">
+    <div class="action-btns">
+      <button class="new-session-btn" id="newSessionBtn">New Session</button>
+      <button class="util-btn" id="exportBtn">Export</button>
+      <button class="util-btn" id="importBtn">Import</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+  </div>
+  <div class="filters" id="filterChips"></div>
+
+  <section class="block" id="checklistSection">
+    <div class="block-head">
+      <h2>Checklist</h2>
+      <span class="count" id="checklistCount"></span>
+    </div>
+    <div id="checklistItems"></div>
+    <button class="toggle-add" data-target="checklistForm">+ Add checklist item</button>
+    <div class="add-form" id="checklistForm" style="display:none;">
+      <div class="add-form-row">
+        <input type="text" id="checklistText" placeholder="e.g. Check DXY trend on H4 before entry">
+      </div>
+      <div class="add-form-row">
+        <select id="checklistCategory"></select>
+        <button class="add-btn" id="addChecklistBtn">Add</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="watchlistSection">
+    <div class="block-head">
+      <h2>Watchlist</h2>
+      <span class="count" id="watchlistCount"></span>
+    </div>
+    <div id="watchlistItems"></div>
+    <button class="toggle-add" data-target="watchlistForm">+ Add watch condition</button>
+    <div class="add-form" id="watchlistForm" style="display:none;">
+      <div class="add-form-row">
+        <select id="watchCategory"></select>
+        <select id="watchDirection">
+          <option value="above">Close above</option>
+          <option value="below">Close below</option>
+        </select>
+        <input type="text" id="watchLevel" placeholder="Price level e.g. 65000">
+      </div>
+      <div class="add-form-row">
+        <select id="watchTimeframe">
+          <option>Weekly</option>
+          <option>Daily</option>
+          <option>H4</option>
+          <option>H1</option>
+          <option>Monthly</option>
+        </select>
+        <input type="text" id="watchCondition" placeholder="Condition e.g. strong candle, high volume">
+      </div>
+      <div class="add-form-row">
+        <input type="text" id="watchNote" placeholder="Optional note">
+        <button class="add-btn" id="addWatchBtn">Add</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="triggersSection">
+    <div class="block-head">
+      <h2>Trigger Rules</h2>
+      <span class="count" id="triggerCount"></span>
+    </div>
+    <div id="triggerItems"></div>
+    <button class="toggle-add" data-target="triggerForm">+ Add trigger rule</button>
+    <div class="add-form" id="triggerForm" style="display:none;">
+      <div class="add-form-row">
+        <input type="text" id="triggerIf" placeholder="IF — e.g. NFP prints >0.3% above forecast">
+      </div>
+      <div class="add-form-row">
+        <input type="text" id="triggerThen" placeholder="THEN — e.g. wait 15min, check for retrace before entry">
+      </div>
+      <div class="add-form-row">
+        <select id="triggerCategory"></select>
+        <button class="add-btn" id="addTriggerBtn">Add</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  const CATEGORIES = ["General","EURUSD","GBPUSD","USDJPY","BTC","XAUUSD","Asian Session","London Session","NY Session","Breakout","Reversal","News"];
+  const STORE_KEY = "ticket_trade_check_v1";
+  const THEME_KEY = "ticket_theme";
+  const STATUS_ORDER = {watching:0, triggered:1, invalidated:2};
+
+  let state = load();
+  let pendingDelete = null; // {id, timeout}
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(!parsed.watchlist) parsed.watchlist = [];
+        if(!parsed.activeFilter) parsed.activeFilter = "All";
+        return parsed;
+      }
+    }catch(e){}
+    return {
+      activeFilter:"All",
+      checklist:[
+        {id:cid(), text:"Higher timeframe (D1/H4) trend direction confirmed", category:"General", checked:false},
+        {id:cid(), text:"No major red-folder news in next 30 min", category:"General", checked:false},
+        {id:cid(), text:"Key session (London/NY) overlap check", category:"General", checked:false}
+      ],
+      triggers:[
+        {id:cid(), condition:"Price sweeps liquidity above/below prior session high/low", action:"Wait for confirmation candle close before entering, don't chase the wick", category:"Breakout", createdAt:Date.now()},
+        {id:cid(), condition:"Volume spikes without matching price movement", action:"Treat as absorption — stand aside, don't enter with the initial move", category:"General", createdAt:Date.now()}
+      ],
+      watchlist:[
+        {id:cid(), category:"BTC", direction:"above", level:"65000", timeframe:"Weekly", condition:"Strong candle close, not a thin wick close", note:"", status:"watching", createdAt:Date.now(), triggeredAt:null}
+      ]
+    };
+  }
+
+  function save(){
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  }
+
+  function cid(){
+    return 'i' + Math.random().toString(36).slice(2,10);
+  }
+
+  function formatDate(ts){
+    if(!ts) return '';
+    return new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ---------- Theme ---------- */
+  function initTheme(){
+    let theme = localStorage.getItem(THEME_KEY);
+    if(!theme){
+      theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    applyTheme(theme);
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
+    document.getElementById('themeIcon').textContent = theme === 'dark' ? '🌙' : '☀️';
+    document.getElementById('themeLabel').textContent = theme === 'dark' ? 'Dark' : 'Light';
+  }
+  document.getElementById('themeToggle').addEventListener('click', ()=>{
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ---------- Section nav ---------- */
+  const sectionIds = ['checklistSection','watchlistSection','triggersSection'];
+  document.querySelectorAll('.nav-tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const target = document.getElementById(btn.dataset.jump);
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+  function setupNavHighlight(){
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+          const tab = document.querySelector(`.nav-tab[data-jump="${entry.target.id}"]`);
+          if(tab) tab.classList.add('active');
+        }
+      });
+    }, {rootMargin:'-120px 0px -70% 0px', threshold:0});
+    sectionIds.forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) observer.observe(el);
+    });
+  }
+
+  /* ---------- Category selects & filters ---------- */
+  function populateCategorySelects(){
+    const opts = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join("");
+    document.getElementById('checklistCategory').innerHTML = opts;
+    document.getElementById('triggerCategory').innerHTML = opts;
+    document.getElementById('watchCategory').innerHTML = opts;
+  }
+
+  function renderFilters(){
+    const used = new Set(["All"]);
+    state.checklist.forEach(i=>used.add(i.category));
+    state.triggers.forEach(i=>used.add(i.category));
+    state.watchlist.forEach(i=>used.add(i.category));
+    const chips = Array.from(used);
+    const wrap = document.getElementById('filterChips');
+    wrap.innerHTML = chips.map(c=>{
+      const active = (state.activeFilter===c) ? "active" : "";
+      return `<button class="filter-chip ${active}" data-filter="${escapeHtml(c)}">${escapeHtml(c)}</button>`;
+    }).join("");
+    wrap.querySelectorAll('.filter-chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.activeFilter = btn.dataset.filter;
+        save();
+        renderAll();
+      });
+    });
+  }
+
+  function groupByCategory(items){
+    const groups = {};
+    items.forEach(i=>{
+      if(!groups[i.category]) groups[i.category] = [];
+      groups[i.category].push(i);
+    });
+    return groups;
+  }
+
+  function requestDelete(id, deleteFn){
+    if(pendingDelete && pendingDelete.id === id){
+      clearTimeout(pendingDelete.timeout);
+      pendingDelete = null;
+      deleteFn();
+      return;
+    }
+    if(pendingDelete) clearTimeout(pendingDelete.timeout);
+    pendingDelete = {id, timeout: setTimeout(()=>{ pendingDelete = null; renderAll(); }, 3000)};
+    renderAll();
+  }
+
+  /* ---------- Checklist ---------- */
+  function checklistItemHtml(item){
+    const confirming = pendingDelete && pendingDelete.id === item.id;
+    return `
+      <div class="checklist-item ${item.checked?'checked':''}">
+        <input type="checkbox" data-id="${item.id}" ${item.checked?'checked':''} aria-label="Mark checked">
+        <div class="item-text ${item.checked?'done':''}">${escapeHtml(item.text)}</div>
+        <span class="tag">${escapeHtml(item.category)}</span>
+        <button class="del-btn ${confirming?'confirming':''}" data-del-check="${item.id}" aria-label="Delete item">${confirming?'Confirm?':'×'}</button>
+      </div>
+    `;
+  }
+
+  function renderChecklist(){
+    const container = document.getElementById('checklistItems');
+    const filtered = state.checklist.filter(i => state.activeFilter==="All" || i.category===state.activeFilter);
+    document.getElementById('checklistCount').textContent = `${filtered.filter(i=>i.checked).length} / ${filtered.length} checked`;
+
+    if(filtered.length===0){
+      container.innerHTML = `<div class="empty">No checklist items in this filter yet.</div>`;
+    } else if(state.activeFilter === "All"){
+      const groups = groupByCategory(filtered);
+      container.innerHTML = Object.keys(groups).map(cat =>
+        `<div class="group-label">${escapeHtml(cat)}</div>` + groups[cat].map(checklistItemHtml).join("")
+      ).join("");
+    } else {
+      container.innerHTML = filtered.map(checklistItemHtml).join("");
+    }
+
+    container.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        const item = state.checklist.find(i=>i.id===cb.dataset.id);
+        item.checked = cb.checked;
+        save();
+        renderChecklist();
+        updateProgress();
+      });
+    });
+    container.querySelectorAll('[data-del-check]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        requestDelete(btn.dataset.delCheck, ()=>{
+          state.checklist = state.checklist.filter(i=>i.id!==btn.dataset.delCheck);
+          save();
+          renderAll();
+        });
+      });
+    });
+
+    updateProgress();
+  }
+
+  /* ---------- Triggers ---------- */
+  function triggerItemHtml(item){
+    const confirming = pendingDelete && pendingDelete.id === item.id;
+    return `
+      <div class="trigger-card">
+        <div class="trigger-row">
+          <div class="trigger-label">IF</div>
+          <div>${escapeHtml(item.condition)}</div>
+          <div class="trigger-label">THEN</div>
+          <div>${escapeHtml(item.action)}</div>
+        </div>
+        <div class="trigger-meta">
+          <div class="trigger-meta-left">
+            <span class="tag">${escapeHtml(item.category)}</span>
+            ${item.createdAt ? `<span class="ts">Added ${formatDate(item.createdAt)}</span>` : ``}
+          </div>
+          <button class="del-btn ${confirming?'confirming':''}" data-del-trigger="${item.id}" aria-label="Delete trigger">${confirming?'Confirm?':'×'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTriggers(){
+    const container = document.getElementById('triggerItems');
+    const filtered = state.triggers.filter(i => state.activeFilter==="All" || i.category===state.activeFilter);
+    document.getElementById('triggerCount').textContent = `${filtered.length} rule${filtered.length===1?'':'s'}`;
+
+    if(filtered.length===0){
+      container.innerHTML = `<div class="empty">No trigger rules in this filter yet.</div>`;
+      return;
+    }
+
+    if(state.activeFilter === "All"){
+      const groups = groupByCategory(filtered);
+      container.innerHTML = Object.keys(groups).map(cat =>
+        `<div class="group-label">${escapeHtml(cat)}</div>` + groups[cat].map(triggerItemHtml).join("")
+      ).join("");
+    } else {
+      container.innerHTML = filtered.map(triggerItemHtml).join("");
+    }
+
+    container.querySelectorAll('[data-del-trigger]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        requestDelete(btn.dataset.delTrigger, ()=>{
+          state.triggers = state.triggers.filter(i=>i.id!==btn.dataset.delTrigger);
+          save();
+          renderAll();
+        });
+      });
+    });
+  }
+
+  /* ---------- Watchlist ---------- */
+  const STATUS_LABEL = {watching:"Watching", triggered:"Triggered", invalidated:"Invalidated"};
+  const DIR_LABEL = {above:"Close above", below:"Close below"};
+
+  function watchItemHtml(item){
+    const confirming = pendingDelete && pendingDelete.id === item.id;
+    return `
+      <div class="watch-card">
+        <div class="watch-top">
+          <div>
+            <div class="watch-asset">${escapeHtml(item.category)}</div>
+            <div class="watch-tf">${escapeHtml(item.timeframe)}</div>
+          </div>
+          <div class="watch-level-wrap">
+            <div class="watch-level">${escapeHtml(item.level)}</div>
+            <small>${escapeHtml(DIR_LABEL[item.direction] || item.direction)}</small>
+          </div>
+        </div>
+        <div class="watch-condition">${escapeHtml(item.condition)}</div>
+        ${item.note ? `<div class="watch-note">${escapeHtml(item.note)}</div>` : ``}
+        <div class="watch-meta">
+          <div class="watch-meta-left">
+            <button class="status-btn ${item.status}" data-cycle-status="${item.id}">${STATUS_LABEL[item.status]}</button>
+            ${item.createdAt ? `<span class="ts">Added ${formatDate(item.createdAt)}</span>` : ``}
+            ${item.triggeredAt ? `<span class="ts">Triggered ${formatDate(item.triggeredAt)}</span>` : ``}
+          </div>
+          <button class="del-btn ${confirming?'confirming':''}" data-del-watch="${item.id}" aria-label="Delete watch condition">${confirming?'Confirm?':'×'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderWatchlist(){
+    const container = document.getElementById('watchlistItems');
+    let filtered = state.watchlist.filter(i => state.activeFilter==="All" || i.category===state.activeFilter);
+    filtered = filtered.slice().sort((a,b)=> STATUS_ORDER[a.status]-STATUS_ORDER[b.status]);
+    document.getElementById('watchlistCount').textContent = `${filtered.length} condition${filtered.length===1?'':'s'}`;
+
+    if(filtered.length===0){
+      container.innerHTML = `<div class="empty">No watch conditions in this filter yet.</div>`;
+    } else if(state.activeFilter === "All"){
+      const groups = groupByCategory(filtered);
+      container.innerHTML = Object.keys(groups).map(cat =>
+        `<div class="group-label">${escapeHtml(cat)}</div>` + groups[cat].map(watchItemHtml).join("")
+      ).join("");
+    } else {
+      container.innerHTML = filtered.map(watchItemHtml).join("");
+    }
+
+    container.querySelectorAll('[data-cycle-status]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = state.watchlist.find(i=>i.id===btn.dataset.cycleStatus);
+        const order = ["watching","triggered","invalidated"];
+        const next = order[(order.indexOf(item.status)+1) % order.length];
+        item.status = next;
+        if(next === 'triggered'){
+          item.triggeredAt = Date.now();
+        } else if(next === 'watching'){
+          item.triggeredAt = null;
+        }
+        save();
+        renderWatchlist();
+      });
+    });
+    container.querySelectorAll('[data-del-watch]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        requestDelete(btn.dataset.delWatch, ()=>{
+          state.watchlist = state.watchlist.filter(i=>i.id!==btn.dataset.delWatch);
+          save();
+          renderAll();
+        });
+      });
+    });
+  }
+
+  function updateProgress(){
+    const total = state.checklist.length;
+    const done = state.checklist.filter(i=>i.checked).length;
+    const el = document.getElementById('progressText');
+    el.textContent = `${done} / ${total}`;
+    el.className = (total>0 && done===total) ? "" : "warn";
+  }
+
+  function renderAll(){
+    renderFilters();
+    renderChecklist();
+    renderWatchlist();
+    renderTriggers();
+  }
+
+  /* ---------- Add forms toggle ---------- */
+  document.querySelectorAll('.toggle-add').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const target = document.getElementById(btn.dataset.target);
+      target.style.display = (target.style.display==='none') ? 'block' : 'none';
+    });
+  });
+
+  document.getElementById('addChecklistBtn').addEventListener('click', ()=>{
+    const textEl = document.getElementById('checklistText');
+    const text = textEl.value.trim();
+    if(!text) return;
+    const category = document.getElementById('checklistCategory').value;
+    state.checklist.push({id:cid(), text, category, checked:false, createdAt:Date.now()});
+    textEl.value = '';
+    save();
+    renderAll();
+  });
+
+  document.getElementById('addTriggerBtn').addEventListener('click', ()=>{
+    const ifEl = document.getElementById('triggerIf');
+    const thenEl = document.getElementById('triggerThen');
+    const condition = ifEl.value.trim();
+    const action = thenEl.value.trim();
+    if(!condition || !action) return;
+    const category = document.getElementById('triggerCategory').value;
+    state.triggers.push({id:cid(), condition, action, category, createdAt:Date.now()});
+    ifEl.value = ''; thenEl.value = '';
+    save();
+    renderAll();
+  });
+
+  document.getElementById('addWatchBtn').addEventListener('click', ()=>{
+    const levelEl = document.getElementById('watchLevel');
+    const conditionEl = document.getElementById('watchCondition');
+    const noteEl = document.getElementById('watchNote');
+    const level = levelEl.value.trim();
+    const condition = conditionEl.value.trim();
+    if(!level || !condition) return;
+    const category = document.getElementById('watchCategory').value;
+    const direction = document.getElementById('watchDirection').value;
+    const timeframe = document.getElementById('watchTimeframe').value;
+    const note = noteEl.value.trim();
+    state.watchlist.push({id:cid(), category, direction, level, timeframe, condition, note, status:"watching", createdAt:Date.now(), triggeredAt:null});
+    levelEl.value = ''; conditionEl.value = ''; noteEl.value = '';
+    save();
+    renderAll();
+  });
+
+  document.getElementById('newSessionBtn').addEventListener('click', ()=>{
+    state.checklist.forEach(i=>i.checked=false);
+    save();
+    renderAll();
+  });
+
+  /* ---------- Export / Import ---------- */
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `ticket-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    document.getElementById('importFile').click();
+  });
+
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt)=>{
+      try{
+        const parsed = JSON.parse(evt.target.result);
+        if(!Array.isArray(parsed.checklist) || !Array.isArray(parsed.triggers) || !Array.isArray(parsed.watchlist)){
+          throw new Error('Missing expected fields');
+        }
+        state = parsed;
+        state.activeFilter = state.activeFilter || 'All';
+        save();
+        renderAll();
+        alert('Backup imported successfully.');
+      }catch(err){
+        alert('Could not import — this file is not a valid TICKET backup.');
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  /* ---------- Init ---------- */
+  initTheme();
+  populateCategorySelects();
+  renderAll();
+  setupNavHighlight();
+})();
+</script>
+
+</body>
+</html>
