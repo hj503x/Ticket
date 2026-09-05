@@ -2,7 +2,7 @@
 
 A single-page trading discipline tool. Built for the habit of writing notes like *"watch BTC for a strong weekly close above 65000"* — so those notes actually resurface before you trade, instead of sitting forgotten in a notebook.
 
-**Live demo:** _[Demo](https://hj503x.github.io/Ticket/)_
+**Live demo:** _[TICKET](https://hj503x.github.io/Ticket/)_
 
 ## What it does
 
